@@ -1,7 +1,7 @@
 import {Fragment} from "react";
 import styles from './Header.module.css';
 import mainImage from '../../../assets/images/meal.jpg';
-import HeaderCartButton from "./HeaderCartButton";
+import HeaderCartButton from "../../Cart/HeaderCartButton";
 import MealSummary from "./MealSummary";
 
 const Header = () => {
