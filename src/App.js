@@ -1,8 +1,8 @@
-import { Fragment, useState } from 'react'
+import { useState } from 'react'
 import Header from './components/Layout/Header/Header'
 import Meals from './components/Meals/Meals'
 import Cart from './components/Cart/Cart'
-import CartContextProvider from "./store/cart-contextProvider";
+import CartContextProvider from './store/cart-contextProvider'
 
 function App() {
   const [cartIsShown, setCartIsShown] = useState(false)

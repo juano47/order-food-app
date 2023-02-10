@@ -1,69 +1,102 @@
 import styles from './Checkout.module.css'
-import useHttp from "../../hooks/use-http";
-import {useContext} from "react";
-import CartContext from "../../store/cart-context";
-import {useRef} from "react";
+import { useContext, useRef, useState } from 'react'
+import CartContext from '../../store/cart-context'
 
-const BASE_URL =
-    'https://orderfoodappreact-default-rtdb.europe-west1.firebasedatabase.app/orders.json'
+const isEmpty = (value) => value.trim() === ''
+const isFiveChars = (value) => value.trim().length === 5
 
 const Checkout = (props) => {
-    const ctx = useContext(CartContext);
-    const { error, sendRequest: sendOrder } = useHttp();
+  useContext(CartContext)
+  const [formInputsValidity, setFormInputsValidity] = useState({
+    name: true,
+    street: true,
+    postalCode: true,
+    city: true,
+  })
 
-    const nameInputRef = useRef();
-    const streetInputRef = useRef();
-    const postalCodeInputRef = useRef();
-    const cityInputRef = useRef();
+  const nameInputRef = useRef()
+  const streetInputRef = useRef()
+  const postalCodeInputRef = useRef()
+  const cityInputRef = useRef()
 
-    const sendOrderHandler = (event) => {
-        event.preventDefault();
+  const onSubmitHandler = (event) => {
+    event.preventDefault()
 
-        sendOrder({
-            url: BASE_URL,
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: props.order,
-        });
+    const enteredName = nameInputRef.current.value
+    const enteredStreet = streetInputRef.current.value
+    const enteredPostalCode = postalCodeInputRef.current.value
+    const enteredCity = cityInputRef.current.value
 
-        if (error !== null) {
-            //show alert
-            alert('Error sending order, sorry!');
-        } else {
-            ctx.clearCart()
-            alert('Order sent successfully!');
-            //close modal
-            props.onHideCart()
-        }
+    const enteredNameIsValid = !isEmpty(enteredName)
+    const enteredStreetIsValid = !isEmpty(enteredStreet)
+    const enteredPostalCodeIsValid = isFiveChars(enteredPostalCode)
+    const enteredCityIsValid = !isEmpty(enteredCity)
+
+    setFormInputsValidity({
+      name: enteredNameIsValid,
+      street: enteredStreetIsValid,
+      postalCode: enteredPostalCodeIsValid,
+      city: enteredCityIsValid,
+    })
+
+    if(!enteredNameIsValid || !enteredStreetIsValid || !enteredPostalCodeIsValid || !enteredCityIsValid)  {
+      return
     }
 
-    return (
-        <form className={styles.form} onSubmit={sendOrderHandler}>
-            <h3>Enter your contact data:</h3>
-            <div className={styles.control}>
-                <label htmlFor='name'>Your Name</label>
-                <input type='text' id='name' ref={nameInputRef}/>
-            </div>
-            <div className={styles.control}>
-                <label htmlFor='street'>Street</label>
-                <input type='text' id='street' ref={streetInputRef}/>
-            </div>
-            <div className={styles.control}>
-                <label htmlFor='postal'>Postal Code</label>
-                <input type='text' id='postal' ref={postalCodeInputRef}/>
-            </div>
-            <div className={styles.control}>
-                <label htmlFor='city'>City</label>
-                <input type='text' id='city' ref={cityInputRef}/>
-            </div>
-            <div className={styles.actions}>
-                <button type='button' onClick={props.onCancel}>Cancel</button>
-                <button className={styles.submit}>Confirm</button>
-            </div>
-        </form>
-        );
+    props.onConfirm({
+      name: enteredName,
+      street: enteredStreet,
+      postalCode: enteredPostalCode,
+      city: enteredCity,
+    })
+  }
+
+  const nameInputClasses = `${styles.control} ${
+    formInputsValidity.name ? '' : styles.invalid
+  }`
+  const streetInputClasses = `${styles.control} ${
+    formInputsValidity.street ? '' : styles.invalid
+  }`
+  const postalCodeInputClasses = `${styles.control} ${
+    formInputsValidity.postalCode ? '' : styles.invalid
+  }`
+  const cityInputClasses = `${styles.control} ${
+    formInputsValidity.city ? '' : styles.invalid
+  }`
+
+  return (
+    <form className={styles.form} onSubmit={onSubmitHandler}>
+      <h3>Enter your contact data:</h3>
+      <div className={nameInputClasses}>
+        <label htmlFor="name">Your Name</label>
+        <input type="text" id="name" ref={nameInputRef} />
+        {!formInputsValidity.name && <p>Please enter a valid name!</p>}
+      </div>
+      <div className={streetInputClasses}>
+        <label htmlFor="street">Street</label>
+        <input type="text" id="street" ref={streetInputRef} />
+        {!formInputsValidity.street && <p>Please enter a valid street!</p>}
+      </div>
+      <div className={postalCodeInputClasses}>
+        <label htmlFor="postal">Postal Code</label>
+        <input type="text" id="postal" ref={postalCodeInputRef} />
+        {!formInputsValidity.postalCode && (
+          <p>Please enter a valid postal code (5 characters long)!</p>
+        )}
+      </div>
+      <div className={cityInputClasses}>
+        <label htmlFor="city">City</label>
+        <input type="text" id="city" ref={cityInputRef} />
+        {!formInputsValidity.city && <p>Please enter a valid city!</p>}
+      </div>
+      <div className={styles.actions}>
+        <button type="button" onClick={props.onCancel}>
+          Cancel
+        </button>
+        <button className={styles.submit}>Confirm</button>
+      </div>
+    </form>
+  )
 }
 
 export default Checkout
