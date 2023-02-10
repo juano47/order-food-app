@@ -1,25 +1,22 @@
 import styles from './Cart.module.css'
 import CartItem from './CartItem'
 import Modal from '../UI/Modal'
-import { useContext } from 'react'
+import { useContext, useState } from 'react'
 import CartContext from '../../store/cart-context'
-import useHttp from '../../hooks/use-http'
-
-const BASE_URL =
-  'https://orderfoodappreact-default-rtdb.europe-west1.firebasedatabase.app/orders.json'
+import Checkout from './Checkout'
 
 const Cart = (props) => {
+  const [isCheckout, setIsCheckout] = useState(false)
+  const [order, setOrder] = useState({})
   const ctx = useContext(CartContext)
   const items = ctx.items
   const totalAmount = `$${Math.abs(ctx.totalAmount.toFixed(2))}`
-
-  const { error, sendRequest: sendOrder } = useHttp()
 
   const meals = items.map((item) => (
     <CartItem meal={item.meal} key={item.meal.id} amount={item.amount} />
   ))
 
-  const sendOrderHandler = () => {
+  const confirmOrderHandler = () => {
     const order = {
       meals: items.map((item) => ({
         id: item.meal.id,
@@ -30,26 +27,20 @@ const Cart = (props) => {
       totalAmount: totalAmount,
       date: new Date(),
     }
-
-    sendOrder({
-      url: BASE_URL,
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: order,
-    });
-
-    if (error !== null) {
-      //show alert
-      alert('Error sending order, sorry!');
-    } else {
-      ctx.clearCart()
-      alert('Order sent successfully!');
-      //close modal
-      props.onHideCart()
-    }
+    setOrder(order)
+    setIsCheckout(true)
   }
+
+  const actions = (
+    <div className={styles.actions}>
+      <button className={styles['button--alt']} onClick={props.onHideCart}>
+        Close
+      </button>
+      <button className={styles.button} onClick={confirmOrderHandler}>
+        Order
+      </button>
+    </div>
+  )
 
   return (
     <Modal>
@@ -59,14 +50,8 @@ const Cart = (props) => {
         <span>Total Amount</span>
         <span>{totalAmount}</span>
       </div>
-      <div className={styles.actions}>
-        <button className={styles['button--alt']} onClick={props.onHideCart}>
-          Close
-        </button>
-        <button className={styles.button} onClick={sendOrderHandler}>
-          Order
-        </button>
-      </div>
+      {!isCheckout && actions}
+      {isCheckout && <Checkout onCancel={props.onHideCart} order={order} />}
     </Modal>
   )
 }
