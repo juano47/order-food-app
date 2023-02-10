@@ -34,10 +34,10 @@ const Cart = (props) => {
       return;
     }
     const order = {
-      name: userData.enteredName,
-      street: userData.enteredStreet,
-      postalCode: userData.enteredPostalCode,
-      city: userData.enteredCity,
+      name: userData.name,
+      street: userData.street,
+      postalCode: userData.postalCode,
+      city: userData.city,
       items: items,
       totalAmount: totalAmount,
       date: new Date(),
