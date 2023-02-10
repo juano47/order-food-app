@@ -11,6 +11,15 @@ const MealItemForm = (props) => {
     event.preventDefault()
     //always is a string even if you set the type to number in the input
     const enteredAmount = amountInputRef.current.value
+    if (
+      enteredAmount.trim().length === 0 ||
+      +enteredAmount < 1 ||
+      +enteredAmount > 5
+    ) {
+      alert('Please enter a valid amount (1-5)')
+      return
+    }
+
     ctx.addItem({
       meal: props.meal,
       amount: Number(enteredAmount),
